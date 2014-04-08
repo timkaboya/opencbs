@@ -209,7 +209,7 @@ namespace OpenCBS.Manager.Contracts
 
             if (OClientTypes.Group == pLoan.ClientType) _SetLoanShareAmount(pLoan, pSqlTransac);
 
-            _installmentManagement.AddInstallments(pLoan.InstallmentList, pLoan.Id, pSqlTransac);
+            _installmentManagement.AddInstallments(pLoan.InstallmentList, pLoan.Id, 0, pSqlTransac);
             return pLoan.Id;
         }
 

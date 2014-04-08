@@ -122,9 +122,9 @@ namespace OpenCBS.Services
         /// Get from database ALL instalments
         /// </summary>
         /// <returns>a list of pair (loanId,instalment)</returns>
-        public List<KeyValuePair<int, Installment>> FindAllInstalments()
+        public List<KeyValuePair<int, Installment>> FindAllInstallments()
         {
-            return _instalmentManager.SelectInstalments();
+            return _instalmentManager.SelectInstallments();
         }
 
         /// <summary>
@@ -219,7 +219,7 @@ namespace OpenCBS.Services
                     else
                     {
                         List<LoanEntryFee> loanEntryFees = pLoan.LoanEntryFeesList;
-                        UpdateLoan(ref pLoan, transaction);
+                        UpdateLoan(ref pLoan, 0, transaction);
                         _loanManager.UpdateLoanEntryFees(loanEntryFees, pLoan.Id, transaction);
                     }
 
@@ -1310,13 +1310,13 @@ namespace OpenCBS.Services
                             {"SqlTransaction", transaction}
                         });
 
-                    ArchiveInstallments(loan, trancheEvent, transaction);
+                    //ArchiveInstallments(loan, trancheEvent, transaction);
 
                     //delete all the old installments of the table Installments
-                    _instalmentManager.DeleteInstallments(loan.Id, transaction);
+                    //_instalmentManager.DeleteInstallments(loan.Id, transaction);
 
                     //insert all the new installments in the table Installments
-                    _instalmentManager.AddInstallments(copyOfLoan.InstallmentList, copyOfLoan.Id, transaction);
+                    _instalmentManager.AddInstallments(copyOfLoan.InstallmentList, copyOfLoan.Id, trancheEvent.Id, transaction);
 
                     //Activate the contract if it's closed because of new tranch
                     if (copyOfLoan.Closed)
@@ -1419,13 +1419,13 @@ namespace OpenCBS.Services
                     //insert into table TrancheEvent
                     _ePs.FireEvent(rescheduleLoanEvent, copyOfLoan, transaction);
 
-                    ArchiveInstallments(loan, rescheduleLoanEvent, transaction);
+                    //ArchiveInstallments(loan, rescheduleLoanEvent, transaction);
 
                     //delete all the old installments of the table Installments
-                    _instalmentManager.DeleteInstallments(loan.Id, transaction);
+                    //_instalmentManager.DeleteInstallments(loan.Id, transaction);
 
                     //insert all the new installments in the table Installments
-                    _instalmentManager.AddInstallments(copyOfLoan.InstallmentList, copyOfLoan.Id, transaction);
+                    _instalmentManager.AddInstallments(copyOfLoan.InstallmentList, copyOfLoan.Id, rescheduleLoanEvent.Id, transaction);
 
                     copyOfLoan.Events.Add(rescheduleLoanEvent);
                     transaction.Commit();
@@ -2361,10 +2361,10 @@ namespace OpenCBS.Services
             return contractId;
         }
 
-        private void UpdateInstalmentsInDatabase(Loan pLoan, SqlTransaction pSqlTransaction)
+        private void UpdateInstalmentsInDatabase(Loan pLoan, int eventId, SqlTransaction pSqlTransaction)
         {
-            _instalmentManager.DeleteInstallments(pLoan.Id, pSqlTransaction);
-            _instalmentManager.AddInstallments(pLoan.InstallmentList, pLoan.Id, pSqlTransaction);
+            //_instalmentManager.DeleteInstallments(pLoan.Id, pSqlTransaction);
+            _instalmentManager.AddInstallments(pLoan.InstallmentList, pLoan.Id, eventId, pSqlTransaction);
         }
 
         private void UpdateLoanInDatabase(Loan pContract, SqlTransaction pSqlTransaction)
@@ -2383,9 +2383,9 @@ namespace OpenCBS.Services
             }
         }
 
-        private void UpdateLoan(ref Loan pLoan, SqlTransaction transaction)
+        private void UpdateLoan(ref Loan pLoan, int eventId, SqlTransaction transaction)
         {
-            UpdateInstalmentsInDatabase(pLoan, transaction);
+            UpdateInstalmentsInDatabase(pLoan, eventId, transaction);
             UpdateLoanInDatabase(pLoan, transaction);
         }
 
@@ -2529,7 +2529,7 @@ namespace OpenCBS.Services
                         loan.Project.Client.Status = OClientStatus.Inactive;
                         _clientManager.UpdateClientStatus(loan.Project.Client, sqlTransaction);
                     }
-                    UpdateLoan(ref loan, sqlTransaction);
+                    UpdateLoan(ref loan, writeOffEvent.Id, sqlTransaction);
 
                     CallInterceptor(new Dictionary<string, object>
                     {

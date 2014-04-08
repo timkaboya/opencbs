@@ -44,7 +44,7 @@ namespace OpenCBS.GUI.Configuration
             progressBar.Value = 1;
             
  
-            List<KeyValuePair<int,Installment>> list = ServicesProvider.GetInstance().GetContractServices().FindAllInstalments();
+            var list = ServicesProvider.GetInstance().GetContractServices().FindAllInstallments();
             progressBar.Maximum = list.Count;
 
             ServicesProvider.GetInstance().GetContractServices().UpdateAllInstallmentsDate(list);
