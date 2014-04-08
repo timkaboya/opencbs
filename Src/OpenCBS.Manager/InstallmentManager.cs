@@ -75,20 +75,20 @@ namespace OpenCBS.Manager
                                         start_date,
                                         olb) 
                                     VALUES (
-                                            @contract_id,
-                                            @event_id,
+                                            @contractId,
+                                            @eventId,
                                             @number, 
-                                            @expected_date,
-                                            @capital_repayment, 
-                                            @interest_repayment,
-                                            @paid_interest, 
-                                            @paid_capital, 
-                                            @paid_fees, 
-                                            @fees_unpaid, 
-                                            @paid_date, 
+                                            @expectedDate,
+                                            @capitalRepayment, 
+                                            @interestsRepayment,
+                                            @paidInterests, 
+                                            @paidCapital, 
+                                            @paidFees, 
+                                            @feesUnpaid, 
+                                            @paidDate, 
                                             @comment,
                                             @pending,
-                                            @start_date,
+                                            @startDate,
                                             @olb)";
 
             using(var c = new OpenCbsCommand(q, pSqlTransac.Connection, pSqlTransac))
@@ -291,10 +291,10 @@ namespace OpenCBS.Manager
             UpdateInstallment(installment, contractId, eventId, sqlTransac, false);
         }
 
-	    private static void SetInstallment(Installment pInstallment, int pLoanId, int eventId, OpenCbsCommand c)
+	    private static void SetInstallment(Installment pInstallment, int loanId, int eventId, OpenCbsCommand c)
 	    {
             //primary key = loanId + number
-            c.AddParam("@contractId", pLoanId);
+            c.AddParam("@contractId", loanId);
             c.AddParam("@number", pInstallment.Number);
 
             c.AddParam("@expectedDate", pInstallment.ExpectedDate);
@@ -304,10 +304,10 @@ namespace OpenCBS.Manager
             c.AddParam("@paidCapital", pInstallment.PaidCapital.Value);
             c.AddParam("@paidDate", pInstallment.PaidDate);
             c.AddParam("@feesUnpaid", pInstallment.FeesUnpaid.Value);
-            c.AddParam("@paid_fees", pInstallment.PaidFees.Value);
+            c.AddParam("@paidFees", pInstallment.PaidFees.Value);
             c.AddParam("@comment", pInstallment.Comment);
             c.AddParam("@pending", pInstallment.IsPending);
-            c.AddParam("@start_date", pInstallment.StartDate);
+            c.AddParam("@startDate", pInstallment.StartDate);
             c.AddParam("@olb", pInstallment.OLB);
             c.AddParam("@eventId", eventId);
 	    }
@@ -354,7 +354,7 @@ namespace OpenCBS.Manager
 		public void UpdateInstallment(IInstallment pInstallment,int pContractId, int? pEventId,SqlTransaction pSqlTransac, bool pRescheduling)
 		{
             // Update installement in database
-			const string q = @"UPDATE Installments 
+			const string q = @"UPDATE InstallmentsTemp 
                                     SET expected_date = @expectedDate, 
                                         interest_repayment = @interestRepayment, 
 				                        capital_repayment = @capitalRepayment, 
@@ -368,8 +368,10 @@ namespace OpenCBS.Manager
                                         comment = @comment,
                                         pending = @pending,
                                         start_date = @start_date,
-                                        olb = @olb
+                                        olb = @olb,
+                                        event_id = @eventId
                                      WHERE contract_id = @contractId 
+                                       AND event_id = 0
                                        AND number = @number";
 
             using (var c = new OpenCbsCommand(q, pSqlTransac.Connection, pSqlTransac))
@@ -388,6 +390,7 @@ namespace OpenCBS.Manager
                 c.AddParam("@pending", pInstallment.IsPending);
                 c.AddParam("@start_date", pInstallment.StartDate);
                 c.AddParam("@olb", pInstallment.OLB);
+                c.AddParam("@eventId", pEventId);
 
                 if (pInstallment is Installment)
                 {
@@ -453,7 +456,7 @@ namespace OpenCBS.Manager
 
         public void ArchiveInstallment(Installment i, int contractId, Event e, SqlTransaction transaction)
         {
-            const string q = @"INSERT INTO dbo.InstallmentHistory 
+            const string q = @"INSERT INTO dbo.InstallmentsTemp
                                       (contract_id, 
                                         event_id, 
                                         number, 
@@ -581,7 +584,7 @@ namespace OpenCBS.Manager
                                          WHERE event_id = @event_id";
             using (var c = new OpenCbsCommand(queryUpdate, t.Connection, t))
             {
-                c.AddParam("@delete_date", TimeProvider.Today);
+                c.AddParam("@delete_date", TimeProvider.Now);
                 c.AddParam("@event_id", e.Id);
                 c.ExecuteNonQuery();
             }

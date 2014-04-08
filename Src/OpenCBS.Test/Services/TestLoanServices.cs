@@ -93,7 +93,7 @@ namespace OpenCBS.Test.Services
             mockInstalmentManager.SetReturnValue("SelectInstalments", new List<KeyValuePair<int, Installment>>());
             LoanServices loanServices = new LoanServices((InstallmentManager)mockInstalmentManager.MockInstance, null, null);
 
-            Assert.AreEqual(0,loanServices.FindAllInstalments().Count);
+            Assert.AreEqual(0,loanServices.FindAllInstallments().Count);
         }
 
         [Test]
@@ -109,7 +109,7 @@ namespace OpenCBS.Test.Services
             mockInstalmentManager.SetReturnValue("SelectInstalments", list);
             LoanServices loanServices = new LoanServices((InstallmentManager)mockInstalmentManager.MockInstance, null, null);
 
-            Assert.AreEqual(2, loanServices.FindAllInstalments().Count);
+            Assert.AreEqual(2, loanServices.FindAllInstallments().Count);
         }
 
         [Test]

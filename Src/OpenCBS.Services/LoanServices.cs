@@ -696,16 +696,16 @@ namespace OpenCBS.Services
                     }
 
                     // Put a copy of installments into the history
-                    ArchiveInstallments(curentLoan, repayEvent, sqlTransaction);
+                    ArchiveInstallments(savedContract, repayEvent, sqlTransaction);
 
                     CreditInsuranceEvent cie = savedContract.Events.GetCreditInsuranceEvents();
                     if (cie != null)
                         _ePs.FireEvent(cie, savedContract, sqlTransaction);
 
                     //Update Installments
-                    foreach (Installment installment in savedContract.InstallmentList)
-                        _instalmentManager.UpdateInstallment(installment, savedContract.Id, repayEvent.Id,
-                                                             sqlTransaction);
+//                    foreach (Installment installment in savedContract.InstallmentList)
+//                        _instalmentManager.UpdateInstallment(installment, savedContract.Id, repayEvent.Id,
+//                                                             sqlTransaction);
 
                     for (int i = savedContract.Events.GetNumberOfEvents - 1; i >= 0; i--)
                     {
@@ -849,14 +849,14 @@ namespace OpenCBS.Services
 
                     _ePs.FireEvent(repayEvent, savedContract, sqlTransaction);
                     // Put a copy of installments into the history
-                    ArchiveInstallments(pLoan, repayEvent, sqlTransaction);
+                    ArchiveInstallments(savedContract, repayEvent, sqlTransaction);
 
                     //Update Installments
-                    foreach (Installment installment in savedContract.InstallmentList)
-                    {
-                        _instalmentManager.UpdateInstallment(installment, savedContract.Id, repayEvent.Id,
-                                                             sqlTransaction);
-                    }
+//                    foreach (Installment installment in savedContract.InstallmentList)
+//                    {
+//                        _instalmentManager.UpdateInstallment(installment, savedContract.Id, repayEvent.Id,
+//                                                             sqlTransaction);
+//                    }
 
                     for (int i = savedContract.Events.GetNumberOfEvents - 1; i >= 0; i--)
                     {
