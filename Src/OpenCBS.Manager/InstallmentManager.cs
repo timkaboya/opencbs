@@ -138,11 +138,11 @@ namespace OpenCBS.Manager
         {
             const string sqlText = @"SELECT 
                                             expected_date, 
-                                            interest_repayment, 
-                                            capital_repayment,
+                                            interest, 
+                                            principal,
                                             number,
                                             paid_interest, 
-                                            paid_capital,
+                                            paid_principal,
                                             fees_unpaid,
                                             paid_date,
                                             paid_fees,
@@ -318,10 +318,10 @@ namespace OpenCBS.Manager
             {
                 Number = r.GetInt("number"),
                 ExpectedDate = r.GetDateTime("expected_date"),
-                InterestsRepayment = r.GetMoney("interest_repayment"),
-                CapitalRepayment = r.GetMoney("capital_repayment"),
+                InterestsRepayment = r.GetMoney("interest"),
+                CapitalRepayment = r.GetMoney("principal"),
                 PaidDate = r.GetNullDateTime("paid_date"),
-                PaidCapital = r.GetMoney("paid_capital"),
+                PaidCapital = r.GetMoney("paid_principal"),
                 FeesUnpaid = r.GetMoney("fees_unpaid"),
                 PaidInterests = r.GetMoney("paid_interest"),
                 PaidFees = r.GetMoney("paid_fees"),
