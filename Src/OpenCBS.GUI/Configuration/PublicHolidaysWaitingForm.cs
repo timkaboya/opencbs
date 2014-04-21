@@ -53,7 +53,7 @@ namespace OpenCBS.GUI.Configuration
             Close();
         }
 
-        public void UpdateInstallmentsDate(DateTime date, Dictionary<int, int> list)
+        public void UpdateInstallmentsDate(DateTime date, Dictionary<int, Tuple<int, int>> list)
         {
             Cursor = Cursors.WaitCursor;
             progressBar.Value = 1;

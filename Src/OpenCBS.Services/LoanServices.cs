@@ -122,7 +122,7 @@ namespace OpenCBS.Services
         /// Get from database ALL instalments
         /// </summary>
         /// <returns>a list of pair (loanId,instalment)</returns>
-        public List<KeyValuePair<int, Installment>> FindAllInstallments()
+        public List<Tuple<int, int, Installment>> FindAllInstallments()
         {
             return _instalmentManager.SelectInstallments();
         }
@@ -130,9 +130,9 @@ namespace OpenCBS.Services
         /// <summary>
         /// Update all instalments' expected date with the nearest valid date 
         /// </summary>
-        /// <param name="pInstallmentList">list of isntalments</param>
+        /// <param name="installmentList">list of isntalments</param>
         /// <returns>Number of modified instalments</returns>
-        public int UpdateAllInstallmentsDate(List<KeyValuePair<int, Installment>> pInstallmentList)
+        public int UpdateAllInstallmentsDate(List<Tuple<int, int, Installment>> installmentList)
         {
             ApplicationSettings appSettings = ApplicationSettings.GetInstance(_user.Md5);
             NonWorkingDateSingleton nonWorkingDate = NonWorkingDateSingleton.GetInstance(_user.Md5);
@@ -140,31 +140,32 @@ namespace OpenCBS.Services
             if (appSettings.DoNotSkipNonWorkingDays) return 0;
 
             int nbOfModifiedInstalments = 0;
-            foreach (KeyValuePair<int, Installment> pair in pInstallmentList)
+            foreach (var pair in installmentList)
             {
-                DateTime date = nonWorkingDate.GetTheNearestValidDate(pair.Value.ExpectedDate,
+                DateTime date = nonWorkingDate.GetTheNearestValidDate(pair.Item3.ExpectedDate,
                                                                       appSettings.IsIncrementalDuringDayOff,
                                                                       appSettings.DoNotSkipNonWorkingDays, true);
 
-                if (pair.Value.ExpectedDate == date) continue;
+                if (pair.Item3.ExpectedDate == date) continue;
 
                 nbOfModifiedInstalments++;
-                pair.Value.ExpectedDate = date;
-                _instalmentManager.UpdateInstallment(pair.Value, pair.Key, null, true);
+                pair.Item3.ExpectedDate = date;
+                _instalmentManager.UpdateInstallment(pair.Item1, pair.Item2, pair.Item3, true);
             }
             return nbOfModifiedInstalments;
         }
 
-        public int UpdateAllInstallmentsDate(DateTime date, Dictionary<int, int> list)
+        public int UpdateAllInstallmentsDate(DateTime date, Dictionary<int, Tuple<int, int>> list)
         {
             int nbOfModifiedInstalments = 0;
             Loan contract;
-            foreach (KeyValuePair<int, int> pair in list)
+            foreach (KeyValuePair<int, Tuple<int, int>> pair in list)
             {
                 contract = _loanManager.SelectLoan(pair.Key, true, false, false);
-                if (contract.CalculateInstallmentDate(contract.AlignDisbursementDate, pair.Value) == date)
+                var eventId = pair.Value.Item1;
+                if (contract.CalculateInstallmentDate(contract.AlignDisbursementDate, pair.Value.Item2) == date)
                 {
-                    _instalmentManager.UpdateInstallment(date, pair.Key, pair.Value);
+                    _instalmentManager.UpdateInstallment(date, pair.Key, pair.Value.Item2, eventId);
                 }
                 nbOfModifiedInstalments++;
             }
@@ -172,14 +173,14 @@ namespace OpenCBS.Services
             return nbOfModifiedInstalments;
         }
 
-        public Dictionary<int, int> GetListOfInstallmentsOnDate(DateTime date)
+        public Dictionary<int, Tuple<int, int>> GetListOfInstallmentsOnDate(DateTime date)
         {
             return _loanManager.GetListOfInstallmentsOnDate(date);
         }
 
-        public void UpdateInstallmentComment(string pComment, int pContractId, int pNumber)
+        public void UpdateInstallmentComment(string comment, int contractId, int number, int eventId)
         {
-            _instalmentManager.UpdateInstallmentComment(pComment, pContractId, pNumber);
+            _instalmentManager.UpdateInstallmentComment(comment, contractId, number, eventId);
         }
 
         /// <summary>
@@ -461,9 +462,10 @@ namespace OpenCBS.Services
                     if (pAlignInstallmentsDatesOnRealDisbursmentDate ||
                         ApplicationSettings.GetInstance(_user != null ? _user.Md5 : string.Empty).
                                             PayFirstInterestRealValue)
-                        foreach (Installment installment in copyLoan.InstallmentList)
+                        /*foreach (Installment installment in copyLoan.InstallmentList)
                             _instalmentManager.UpdateInstallment(installment, copyLoan.Id, loanDisbEventId,
-                                                                 sqlTransaction);
+                                                                 sqlTransaction);*/
+                        _instalmentManager.AddInstallments(copyLoan.InstallmentList, copyLoan.Id, loanDisbEventId, sqlTransaction);
 
                     copyLoan.FundingLine.AddEvent(flFundingLineEvent);
 
@@ -696,7 +698,7 @@ namespace OpenCBS.Services
                     }
 
                     // Put a copy of installments into the history
-                    ArchiveInstallments(savedContract, repayEvent, sqlTransaction);
+                    //ArchiveInstallments(savedContract, repayEvent, sqlTransaction);
 
                     CreditInsuranceEvent cie = savedContract.Events.GetCreditInsuranceEvents();
                     if (cie != null)
@@ -706,6 +708,8 @@ namespace OpenCBS.Services
 //                    foreach (Installment installment in savedContract.InstallmentList)
 //                        _instalmentManager.UpdateInstallment(installment, savedContract.Id, repayEvent.Id,
 //                                                             sqlTransaction);
+
+                    _instalmentManager.AddInstallments(savedContract.InstallmentList, savedContract.Id, repayEvent.Id, sqlTransaction);
 
                     for (int i = savedContract.Events.GetNumberOfEvents - 1; i >= 0; i--)
                     {
@@ -849,7 +853,7 @@ namespace OpenCBS.Services
 
                     _ePs.FireEvent(repayEvent, savedContract, sqlTransaction);
                     // Put a copy of installments into the history
-                    ArchiveInstallments(savedContract, repayEvent, sqlTransaction);
+                    //ArchiveInstallments(savedContract, repayEvent, sqlTransaction);
 
                     //Update Installments
 //                    foreach (Installment installment in savedContract.InstallmentList)
@@ -857,6 +861,8 @@ namespace OpenCBS.Services
 //                        _instalmentManager.UpdateInstallment(installment, savedContract.Id, repayEvent.Id,
 //                                                             sqlTransaction);
 //                    }
+
+                    _instalmentManager.AddInstallments(savedContract.InstallmentList, savedContract.Id, repayEvent.Id, sqlTransaction);
 
                     for (int i = savedContract.Events.GetNumberOfEvents - 1; i >= 0; i--)
                     {
@@ -1217,9 +1223,10 @@ namespace OpenCBS.Services
             {
                 try
                 {
-                    Loan copyOfLoan = loan.Copy();
+                    //Loan copyOfLoan = loan.Copy();
                     _ePs.FireEvent(manualScheduleChangeEvent, loan, sqlTransaction);
-                    ArchiveInstallments(copyOfLoan, manualScheduleChangeEvent, sqlTransaction);
+                    //ArchiveInstallments(copyOfLoan, manualScheduleChangeEvent, sqlTransaction);
+                    _instalmentManager.AddInstallments(loan.InstallmentList, loan.Id, manualScheduleChangeEvent.Id, sqlTransaction);
 
                     sqlTransaction.Commit();
                     return loan;
@@ -1718,7 +1725,8 @@ namespace OpenCBS.Services
 
                     cancelledEvent = evnt;
                     // Restore the installment status.
-                    UnarchiveInstallments(contract, cancelledEvent, sqlTransaction);
+                    ArchiveInstallmentList(contract, cancelledEvent, sqlTransaction);
+                    //UnarchiveInstallments(contract, cancelledEvent, sqlTransaction);
                     contract.InstallmentList = _instalmentManager.SelectInstallments(contract.Id, sqlTransaction);
                     contract.GivenTranches = _loanManager.SelectTranches(contract.Id, sqlTransaction);
                     contract.NbOfInstallments = contract.InstallmentList.Count;
@@ -2329,10 +2337,8 @@ namespace OpenCBS.Services
             {
                 try
                 {
-                    foreach (Installment installment in pInstallments)
-                    {
-                        _instalmentManager.UpdateInstallment(installment, pLoan.Id, 0, sqlTransaction);
-                    }
+                    _instalmentManager.DeleteInstallments(pLoan.Id, sqlTransaction);
+                    _instalmentManager.AddInstallments(pLoan.InstallmentList, pLoan.Id, 0, sqlTransaction);
 
                     _loanManager.UpdateLoan(pLoan, sqlTransaction);
                     sqlTransaction.Commit();
@@ -2363,7 +2369,7 @@ namespace OpenCBS.Services
 
         private void UpdateInstalmentsInDatabase(Loan pLoan, int eventId, SqlTransaction pSqlTransaction)
         {
-            //_instalmentManager.DeleteInstallments(pLoan.Id, pSqlTransaction);
+            _instalmentManager.DeleteInstallments(pLoan.Id, pSqlTransaction);
             _instalmentManager.AddInstallments(pLoan.InstallmentList, pLoan.Id, eventId, pSqlTransaction);
         }
 
@@ -2389,22 +2395,14 @@ namespace OpenCBS.Services
             UpdateLoanInDatabase(pLoan, transaction);
         }
 
-        public void ArchiveInstallments(Loan loan, Event e, SqlTransaction t)
-        {
-            foreach (Installment i in loan.InstallmentList)
-            {
-                _instalmentManager.ArchiveInstallment(i, loan.Id, e, t);
-            }
-        }
-
-        public List<Installment> GetArchivedInstallments(int eventId)
+        public List<Installment> GetArchivedInstallments(Event e)
         {
             using (SqlConnection conn = _instalmentManager.GetConnection())
             using (SqlTransaction sqlTransaction = conn.BeginTransaction())
             {
                 try
                 {
-                    List<Installment> list = _instalmentManager.GetArchivedInstallments(eventId, sqlTransaction);
+                    List<Installment> list = _instalmentManager.GetArchivedInstallments(e, sqlTransaction);
                     sqlTransaction.Commit();
                     return list;
                 }
@@ -2417,9 +2415,9 @@ namespace OpenCBS.Services
             }
         }
 
-        public void UnarchiveInstallments(Loan loan, Event e, SqlTransaction t)
+        public void ArchiveInstallmentList(Loan loan, Event e, SqlTransaction t)
         {
-            _instalmentManager.UnarchiveInstallments(loan, e, t);
+            _instalmentManager.ArchiveInstallmentList(loan, e, t);
         }
 
         public Loan SelectLoan(int pLoanId,
@@ -2434,17 +2432,6 @@ namespace OpenCBS.Services
         public int SelectLoanId(string pLoanCode)
         {
             return _loanManager.SelectLoanID(pLoanCode);
-        }
-
-        public void CancelPendingInstallments(Loan pLoan)
-        {
-            Loan fakeLoan = pLoan.Copy();
-
-            foreach (var installment in pLoan.InstallmentList.FindAll(item => item.IsPending))
-            {
-                var fakeInstallment = fakeLoan.InstallmentList.Find(item => item.Number == installment.Number);
-                _instalmentManager.UpdateInstallment(fakeInstallment, pLoan.Id, null, null);
-            }
         }
 
         private void LoadAlerts()
@@ -3094,10 +3081,11 @@ namespace OpenCBS.Services
                     }
                     loan.Events = eventStock;
                     _ePs.FireEvent(repayEvent, loan, sqlTransaction);
-                    ArchiveInstallments(loan, repayEvent, sqlTransaction);
+                    //ArchiveInstallments(loan, repayEvent, sqlTransaction);
                     loan.InstallmentList = newInstallments.ToList();
-                    foreach (var installment in newInstallments)
-                        _instalmentManager.UpdateInstallment(installment, loan.Id, repayEvent.Id, sqlTransaction);
+                    _instalmentManager.AddInstallments(loan.InstallmentList, loan.Id, repayEvent.Id, sqlTransaction);
+                    //foreach (var installment in newInstallments)
+                    //    _instalmentManager.UpdateInstallment(installment, loan.Id, repayEvent.Id, sqlTransaction);
                     if (newInstallments.All(installment => installment.IsRepaid))
                     {
                         _ePs.FireEvent(loan.GetCloseEvent(TimeProvider.Now), loan, sqlTransaction);

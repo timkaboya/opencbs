@@ -121,8 +121,8 @@ namespace OpenCBS.Services.Export
                 }
                 else
                 {
-                    if (loan.InstallmentList[installment.InstallmentNumber].IsPending)
-                        loanServices.CancelPendingInstallments(loan);
+                    //if (loan.InstallmentList[installment.InstallmentNumber].IsPending)
+                        //loanServices.CancelPendingInstallments(loan);
                 }
             }
         }

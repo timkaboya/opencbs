@@ -88,10 +88,10 @@ namespace OpenCBS.Test.Services
         [Test]
         public void FindAllInstalments_NoResult()
         {
-            DynamicMock mockInstalmentManager = new DynamicMock(typeof(InstallmentManager));
+            var mockInstalmentManager = new DynamicMock(typeof(InstallmentManager));
 
             mockInstalmentManager.SetReturnValue("SelectInstalments", new List<KeyValuePair<int, Installment>>());
-            LoanServices loanServices = new LoanServices((InstallmentManager)mockInstalmentManager.MockInstance, null, null);
+            var loanServices = new LoanServices((InstallmentManager)mockInstalmentManager.MockInstance, null, null);
 
             Assert.AreEqual(0,loanServices.FindAllInstallments().Count);
         }
@@ -99,15 +99,15 @@ namespace OpenCBS.Test.Services
         [Test]
         public void FindAllInstalments_Result()
         {
-            DynamicMock mockInstalmentManager = new DynamicMock(typeof(InstallmentManager));
-            List<KeyValuePair<int, Installment>> list = new List<KeyValuePair<int, Installment>>
-                                                            {
-                                                                new KeyValuePair<int, Installment>(1, new Installment()),
-                                                                new KeyValuePair<int, Installment>(2, new Installment())
+            var mockInstalmentManager = new DynamicMock(typeof(InstallmentManager));
+            var list = new List<Tuple<int, int, Installment>>
+            {
+                                                                new Tuple<int, int, Installment>(1, 0, new Installment()),
+                                                                new Tuple<int, int, Installment>(2, 0, new Installment())
                                                             };
 
             mockInstalmentManager.SetReturnValue("SelectInstalments", list);
-            LoanServices loanServices = new LoanServices((InstallmentManager)mockInstalmentManager.MockInstance, null, null);
+            var loanServices = new LoanServices((InstallmentManager)mockInstalmentManager.MockInstance, null, null);
 
             Assert.AreEqual(2, loanServices.FindAllInstallments().Count);
         }
@@ -118,10 +118,10 @@ namespace OpenCBS.Test.Services
             ApplicationSettings.GetInstance("").UpdateParameter(OGeneralSettings.DONOTSKIPWEEKENDSININSTALLMENTSDATE, true);
             ApplicationSettings.GetInstance("").UpdateParameter(OGeneralSettings.INCREMENTALDURINGDAYOFF, true);
 
-            DynamicMock mockInstalmentManager = new DynamicMock(typeof(InstallmentManager));
-            List<KeyValuePair<int, Installment>> list = new List<KeyValuePair<int, Installment>>
+            var mockInstalmentManager = new DynamicMock(typeof(InstallmentManager));
+            var list = new List<Tuple<int, int, Installment>>
                                       {
-                                          new KeyValuePair<int, Installment>(1, new Installment
+                                          new Tuple<int, int, Installment>(1, 0, new Installment
                                           {
                                               Number = 1,
                                               CapitalRepayment = 200,
@@ -130,7 +130,7 @@ namespace OpenCBS.Test.Services
                                               ExpectedDate = DateTime.Today.AddDays(-1)
                                           })
                                        };
-            LoanServices loanServices = new LoanServices((InstallmentManager)mockInstalmentManager.MockInstance, null, null);
+            var loanServices = new LoanServices((InstallmentManager)mockInstalmentManager.MockInstance, null, null);
 
             Assert.AreEqual(0, loanServices.UpdateAllInstallmentsDate(list));
         }
@@ -142,10 +142,10 @@ namespace OpenCBS.Test.Services
             ApplicationSettings.GetInstance("").UpdateParameter(OGeneralSettings.INCREMENTALDURINGDAYOFF, true);
             NonWorkingDateSingleton.GetInstance("").PublicHolidays = new Dictionary<DateTime, string>();
 
-            DynamicMock mockInstalmentManager = new DynamicMock(typeof(InstallmentManager));
-            List<KeyValuePair<int, Installment>> list = new List<KeyValuePair<int, Installment>>
+            var mockInstalmentManager = new DynamicMock(typeof(InstallmentManager));
+            var list = new List<Tuple<int, int, Installment>>
                                       {
-                                          new KeyValuePair<int, Installment>(1, new Installment
+                                          new Tuple<int, int, Installment>(1, 0, new Installment
                                           {
                                               Number = 1,
                                               CapitalRepayment = 200,
@@ -154,7 +154,7 @@ namespace OpenCBS.Test.Services
                                               ExpectedDate = DateTime.Today.AddDays(-1)
                                           })
                                        };
-            LoanServices loanServices = new LoanServices((InstallmentManager)mockInstalmentManager.MockInstance, null, null);
+            var loanServices = new LoanServices((InstallmentManager)mockInstalmentManager.MockInstance, null, null);
 
             Assert.AreEqual(0, loanServices.UpdateAllInstallmentsDate(list));
         }
@@ -166,7 +166,7 @@ namespace OpenCBS.Test.Services
             ApplicationSettings.GetInstance("").UpdateParameter(OGeneralSettings.INCREMENTALDURINGDAYOFF, true);
             NonWorkingDateSingleton.GetInstance("").PublicHolidays = new Dictionary<DateTime, string>
                                                                          {{DateTime.Today.AddDays(-1), "dfsdf"}};
-            Installment installment = new Installment
+            var installment = new Installment
                                           {
                                               Number = 1,
                                               CapitalRepayment = 200,
@@ -175,15 +175,15 @@ namespace OpenCBS.Test.Services
                                               ExpectedDate = DateTime.Today.AddDays(-1)
                                           };
 
-            DynamicMock mockInstalmentManager = new DynamicMock(typeof(InstallmentManager));
+            var mockInstalmentManager = new DynamicMock(typeof(InstallmentManager));
             mockInstalmentManager.Expect("UpdateInstallment",installment, 1, null, true);
 
-            List<KeyValuePair<int, Installment>> list = new List<KeyValuePair<int, Installment>>
+            var list = new List<Tuple<int, int, Installment>>
                                                             {
-                                                                new KeyValuePair<int, Installment>(1, installment)
+                                                                new Tuple<int, int, Installment>(1, 0, installment)
                                                             };
 
-            LoanServices loanServices = new LoanServices((InstallmentManager)mockInstalmentManager.MockInstance, null, null);
+            var loanServices = new LoanServices((InstallmentManager)mockInstalmentManager.MockInstance, null, null);
             Assert.AreEqual(1, loanServices.UpdateAllInstallmentsDate(list));
         }
 
@@ -191,8 +191,8 @@ namespace OpenCBS.Test.Services
         [ExpectedException(typeof(OpenCbsContractSaveException))]
         public void CheckLoanFilling_AmountIsEmpty()
         {
-            Loan loan = new Loan{Amount = 0};
-            LoanServices loanServices = new LoanServices(new User());
+            var loan = new Loan{Amount = 0};
+            var loanServices = new LoanServices(new User());
             loanServices.CheckLoanFilling(loan);
         }
 

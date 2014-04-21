@@ -4590,7 +4590,7 @@ namespace OpenCBS.GUI.Clients
                     throw new OpenCbsContractSaveException(OpenCbsContractSaveExceptionEnum.OperationOutsideCurrentFiscalYear);
                 }
 
-                List<Installment> archivedInstallments = cServices.GetArchivedInstallments(foundEvent.Id);
+                List<Installment> archivedInstallments = cServices.GetArchivedInstallments(foundEvent);
                 // Request user confirmation
                 var eventCancelConfirmationForm = new EventCancelConfirmationForm(_credit, foundEvent, archivedInstallments);
 
@@ -6086,9 +6086,11 @@ namespace OpenCBS.GUI.Clients
         {
             var installment = (Installment)lvLoansRepayments.SelectedItems[0].Tag;
             var editCommentDialog = new InstallmentCommentDialog() { Comment = installment.Comment };
+            var ev = _credit.GetLastNonDeletedEvent();
+            var eventId = _credit.GetLastNonDeletedEvent() != null ? _credit.GetLastNonDeletedEvent().Id : 0;
             if (editCommentDialog.ShowDialog() == DialogResult.OK)
             {
-                ServicesProvider.GetInstance().GetContractServices().UpdateInstallmentComment(editCommentDialog.Comment, _credit.Id, installment.Number);
+                ServicesProvider.GetInstance().GetContractServices().UpdateInstallmentComment(editCommentDialog.Comment, _credit.Id, installment.Number, eventId);
                 _credit.InstallmentList.FirstOrDefault(item => item.Number == installment.Number).Comment = editCommentDialog.Comment;
                 DisplayListViewLoanRepayments(_credit);
             }
@@ -6191,9 +6193,9 @@ namespace OpenCBS.GUI.Clients
 
                     _credit.ScheduleChangedManually = true;
 
-                    if (_credit.ContractStatus != 0)
+                    /*if (_credit.ContractStatus != 0)
                         ServicesProvider.GetInstance().GetContractServices().SaveSchedule(
-                            manualScheduleForm.Loan.InstallmentList, _credit);
+                            manualScheduleForm.Loan.InstallmentList, _credit);*/
 
                     _credit.InstallmentList = manualScheduleForm.Loan.InstallmentList;
 

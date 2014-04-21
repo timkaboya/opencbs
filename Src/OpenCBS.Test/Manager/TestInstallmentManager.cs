@@ -84,17 +84,6 @@ namespace OpenCBS.Test.Manager
         }
 
         [Test]
-        public void DeleteInstallments()
-        {
-            InstallmentManager installmentManager = (InstallmentManager)container["InstallmentManager"];
-
-            Assert.AreEqual(3, installmentManager.SelectInstallments(1).Count);
-
-            installmentManager.DeleteInstallments(1);
-            Assert.AreEqual(0, installmentManager.SelectInstallments(1).Count);
-        }
-
-        [Test]
         public void SelectInstallments()
         {
             InstallmentManager installmentManager = (InstallmentManager)container["InstallmentManager"];
@@ -118,40 +107,5 @@ namespace OpenCBS.Test.Manager
             Assert.AreEqual(pPaidDate, pInstallment.PaidDate);
             Assert.AreEqual(pUnpaidFees.Value, pInstallment.FeesUnpaid.Value);
 	    }
-
-	    [Test]
-        public void UpdateInstallment_NoReschedule()
-        {
-            InstallmentManager installmentManager = (InstallmentManager)container["InstallmentManager"];
-            List<Installment> list = installmentManager.SelectInstallments(1);
-
-            _AssertSelectedInstallment(list[0], 1, new DateTime(2007, 1, 1), 2, 20, 2, 10, null, 0);
-
-            list[0].PaidDate = new DateTime(2009,3,3);
-	        list[0].FeesUnpaid = 7;
-
-	        installmentManager.UpdateInstallment(list[0], 1, 1);
-
-            List<Installment> updatedList = installmentManager.SelectInstallments(1);
-            _AssertSelectedInstallment(updatedList[0], 1, new DateTime(2007, 1, 1), 2, 20, 2, 10, new DateTime(2009, 3, 3), 7);
-        }
-
-        [Test]
-        public void UpdateInstallment_Reschedule()
-        {
-            InstallmentManager installmentManager = (InstallmentManager)container["InstallmentManager"];
-            List<Installment> list = installmentManager.SelectInstallments(1);
-
-            _AssertSelectedInstallment(list[0], 1, new DateTime(2007, 1, 1), 2, 20, 2, 10, null, 0);
-
-            list[0].PaidDate = new DateTime(2009, 3, 3);
-            list[0].FeesUnpaid = 7;
-
-            installmentManager.UpdateInstallment(list[0], 1, 1, true);
-
-            List<Installment> updatedList = installmentManager.SelectInstallments(1);
-            _AssertSelectedInstallment(updatedList[0], 1, new DateTime(2007, 1, 1), 2, 20, 2, 10, new DateTime(2009, 3, 3), 7);
-
-        }
 	}
 }

@@ -1920,27 +1920,27 @@ namespace OpenCBS.Manager.Contracts
             c.AddParam("@insurance", pLoan.Insurance);
         }
 
-        public Dictionary<int, int> GetListOfInstallmentsOnDate(DateTime date)
+        public Dictionary<int, Tuple<int, int>> GetListOfInstallmentsOnDate(DateTime date)
         {
-            string q = @"SELECT dbo.Credit.id, dbo.Installments.number
-                               FROM dbo.Credit
-                               INNER JOIN dbo.Installments ON dbo.Credit.id = dbo.Installments.contract_id
-                               WHERE dbo.Installments.expected_date BETWEEN DATEADD(dd, -1, @date) AND DATEADD(dd, 1, @date)";
-            using (SqlConnection conn = GetConnection())
-            using (OpenCbsCommand c = new OpenCbsCommand(q, conn))
+            const string q = @"select contract_id, event_id, number 
+                               from InstallmentSnapshot(@dateNow)
+                               where expected_date = convert(date, @date)";
+            using (var conn = GetConnection())
+            using (var c = new OpenCbsCommand(q, conn))
             {
                 c.AddParam("@date", date);
+                c.AddParam("@dateNow", TimeProvider.Now);
 
-                using (OpenCbsReader r = c.ExecuteReader())
+                using (var r = c.ExecuteReader())
                 {
-                    Dictionary<int, int> ListOfContractsInstallment = new Dictionary<int, int>();
+                    var listOfContractsInstallment = new Dictionary<int, Tuple<int, int>>();
 
                     while (r.Read())
                     {
-                        ListOfContractsInstallment.Add(r.GetInt("id"), r.GetInt("number"));
+                        listOfContractsInstallment.Add(r.GetInt("id"), new Tuple<int, int>(r.GetInt("event_id"), r.GetInt("number")));
                     }
 
-                    return ListOfContractsInstallment;
+                    return listOfContractsInstallment;
                 }
             }
         }
