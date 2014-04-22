@@ -28,6 +28,9 @@ GO
 DELETE FROM dbo.GeneralParameters WHERE [KEY] ='CITY_IS_AN_OPEN_VALUE'
 GO
 
+DELETE FROM dbo.GeneralParameters WHERE [KEY] ='NAME_FORMAT'
+GO
+
 IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[InstallmentsTemp]') AND type in (N'U'))
 BEGIN
 CREATE TABLE [dbo].[InstallmentHistory](
