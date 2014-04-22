@@ -28,7 +28,29 @@ GO
 DELETE FROM dbo.GeneralParameters WHERE [KEY] ='CITY_IS_AN_OPEN_VALUE'
 GO
 
-
+IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[InstallmentsTemp]') AND type in (N'U'))
+BEGIN
+CREATE TABLE [dbo].[InstallmentHistory](
+	[id] [int] IDENTITY(1,1) NOT NULL,
+	[contract_id] [int] NOT NULL,
+	[event_id] [int] NOT NULL,
+	[number] [int] NOT NULL,
+	[expected_date] [datetime] NOT NULL,
+	[capital_repayment] [money] NOT NULL,
+	[interest_repayment] [money] NOT NULL,
+	[paid_interest] [money] NOT NULL DEFAULT ((0)),
+	[paid_capital] [money] NOT NULL DEFAULT ((0)),
+	[paid_fees] [money] NOT NULL DEFAULT ((0)),
+	[fees_unpaid] [money] NOT NULL DEFAULT ((0)),
+	[paid_date] [datetime] NULL,
+	[delete_date] [datetime] NULL,
+	[comment] [nvarchar](50) NULL,
+	[pending] [bit] NOT NULL DEFAULT ((0)),
+	[start_date] [datetime] NOT NULL DEFAULT (getdate()),
+	[olb] [money] NOT NULL DEFAULT ((0))
+) ON [PRIMARY]
+END
+GO
  
 UPDATE  [TechnicalParameters]
 SET     [value] = 'v14.6.0.0'

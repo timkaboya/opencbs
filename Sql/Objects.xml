@@ -435,57 +435,32 @@ RETURNS TABLE
 AS
 RETURN
 (
-	WITH _installments AS
-	(
-		-- Unite Installments and InstallmentHistory
-		SELECT h.event_id AS snapshot_id
-			, e.event_date AS snapshot_date
-			, h.contract_id
-			, h.number
-			, h.expected_date
-			, h.capital_repayment
-			, h.interest_repayment
-			, h.paid_capital
-			, h.paid_interest
-			, h.paid_date
-		FROM dbo.InstallmentHistory AS h
-		LEFT JOIN dbo.ContractEvents AS e ON h.event_id = e.id
-		WHERE e.is_deleted = 0
-		UNION ALL
-		SELECT 0 AS snapshot_id
-			, '2050-01-01' AS snapshot_date -- date in a very distant future
-			, contract_id
-			, number
-			, expected_date
-			, capital_repayment
-			, interest_repayment
-			, paid_capital
-			, paid_interest
-			, paid_date
-		FROM dbo.Installments
-	)
-	SELECT i.contract_id
-		, i.number
-		, i.expected_date
-		, capital_repayment AS principal
-		, interest_repayment AS interest
-		, paid_capital paid_principal
-		, paid_interest
-		, paid_date
-	FROM [_installments] AS i
-	RIGHT JOIN
-	(
-		-- Rank snapshots according to dates
-		SELECT *, ROW_NUMBER() OVER (PARTITION BY contract_id ORDER BY snapshot_date ASC) AS [rank]
-		FROM
-		(
-			-- Get relevant snapshots only
-			SELECT contract_id, snapshot_id, snapshot_date FROM [_installments]
-			WHERE snapshot_date > @date
-			GROUP BY contract_id, snapshot_id, snapshot_date
-		) AS t
-	) AS s ON s.contract_id = i.contract_id AND s.snapshot_id = i.snapshot_id
-	WHERE s.[rank] = 1
+    select
+        i.contract_id
+        , i.event_id
+    , i.number
+    , i.expected_date
+    , capital_repayment AS principal
+    , interest_repayment AS interest
+    , paid_capital paid_principal
+    , paid_interest
+    , paid_date
+    , fees_unpaid
+    , paid_fees
+    , comment
+    , pending
+    , start_date
+    , olb
+    from InstallmentsTemp i
+    right join
+    (
+        select contract_id, MAX(id) as event_id 
+        from ContractEvents
+        where event_type in ('RGLE', 'RBLE', 'ATR', 'APR', 'ROLE', 'TEET', 'MSCE', 'LODE')
+        and CAST(event_date as DATE) <= @date
+        and is_deleted = 0
+        group by contract_id
+    ) e on i.event_id = e.event_id
 )
 ]]></create>
     <drop><![CDATA[IF  EXISTS (
