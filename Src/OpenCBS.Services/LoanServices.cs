@@ -1517,7 +1517,9 @@ namespace OpenCBS.Services
                             GracePeriod = trancheConfiguration.GracePeriod,
                             StartedFromInstallment = startInstallment == null ? 0 : startInstallment.Number,
                             User = _user,
-                            PaymentMethod = paymentMethod
+                            PaymentMethod = paymentMethod,
+                            PaymentMethodId = paymentMethod.Id,
+                            Cancelable = true
                         };
 
                     trancheEvent.User = _user;
