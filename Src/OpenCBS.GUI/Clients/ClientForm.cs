@@ -4006,6 +4006,7 @@ namespace OpenCBS.GUI.Clients
                 buttonReschedule.Enabled = false;
                 btnWriteOff.Enabled = false;
                 buttonManualSchedule.Enabled = false;
+                buttonAddTranche.Enabled = false;
             }
             DisplaySavings(_client.Savings);
             if (MdiParent != null)
