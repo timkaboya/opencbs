@@ -1935,28 +1935,34 @@ namespace OpenCBS.Services
                                                     .GetSaving(saving.Id)
                                                     .Events.OfType<SavingEvent>());
 
-                            var debitSavingEvent = listSavingsEvents.First(ev => ev.Id == id);
-                            var creditSavingEvent =
-                                listSavingsEvents.First(
-                                    ev => ev.Amount == debitSavingEvent.Amount && ev.Date == debitSavingEvent.Date);
-                            debitSavingEvent.CancelDate = TimeProvider.Today;
-                            creditSavingEvent.CancelDate = TimeProvider.Today;
+                            var debitSavingEvent = listSavingsEvents.FirstOrDefault(ev => ev.Id == id);
+                            if (debitSavingEvent != null)
+                            {
+                                var tempService = ServicesProvider.GetInstance().GetSavingServices();
+                                debitSavingEvent.CancelDate = TimeProvider.Today;
+                                tempService.DeleteEvent(debitSavingEvent);
+                                CallInterceptor(new Dictionary<string, object>
+                                    {
+                                        {"Event", debitSavingEvent},
+                                        {"Deleted", true},
+                                        {"SqlTransaction", sqlTransaction}
+                                    });
+                                var creditSavingEvent =
+                                    listSavingsEvents.FirstOrDefault(
+                                        ev => ev.Amount == debitSavingEvent.Amount && ev.Date == debitSavingEvent.Date);
+                                if (creditSavingEvent != null)
+                                {
+                                    creditSavingEvent.CancelDate = TimeProvider.Today;
 
-                            var tempService = ServicesProvider.GetInstance().GetSavingServices();
-                            tempService.DeleteEvent(debitSavingEvent);
-                            CallInterceptor(new Dictionary<string, object>
-                            {
-                                {"Event", debitSavingEvent},
-                                {"Deleted", true},
-                                {"SqlTransaction", sqlTransaction}
-                            });
-                            tempService.DeleteEvent(creditSavingEvent);
-                            CallInterceptor(new Dictionary<string, object>
-                            {
-                                {"Event", creditSavingEvent},
-                                {"Deleted", true},
-                                {"SqlTransaction", sqlTransaction}
-                            });
+                                    tempService.DeleteEvent(creditSavingEvent);
+                                    CallInterceptor(new Dictionary<string, object>
+                                        {
+                                            {"Event", creditSavingEvent},
+                                            {"Deleted", true},
+                                            {"SqlTransaction", sqlTransaction}
+                                        });
+                                }
+                            }
                         }
                     }
                     _ePs.UpdateCommentForLoanEvent(evnt, sqlTransaction);
