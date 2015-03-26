@@ -89,7 +89,7 @@ namespace OpenCBS.Manager.Events
             return retval;
         }
 
-	    public EventStock SelectEvents(int pContractId)
+	    public EventStock SelectEvents(int pContractId, SqlTransaction tx = null)
 		{
             const string q = @"SELECT 
                     ContractEvents.id AS event_id,
@@ -211,21 +211,28 @@ namespace OpenCBS.Manager.Events
                     left join dbo.PenaltyWriteOffEvents pwoe on pwoe.id = ContractEvents.id
                     WHERE (ContractEvents.contract_id = @id)
                     ORDER BY ContractEvents.id";
-            using (SqlConnection conn = GetConnection())
-            using(OpenCbsCommand c = new OpenCbsCommand(q, conn))
-            {
-                c.AddParam("@id", pContractId);
-                using (OpenCbsReader r = c.ExecuteReader())
-                {
-                    if(r == null || r.Empty) return new EventStock();
-                    EventStock list = new EventStock();
-                    while (r.Read())
-                    {
-                        list.Add(ReadEvent(r));
-                    }
-                    return list;
-                }
-            }
+	        var connection = tx != null ? tx.Connection : GetConnection();
+	        try
+	        {
+	            using (OpenCbsCommand c = new OpenCbsCommand(q, connection, tx))
+	            {
+	                c.AddParam("@id", pContractId);
+	                using (OpenCbsReader r = c.ExecuteReader())
+	                {
+	                    if (r == null || r.Empty) return new EventStock();
+	                    EventStock list = new EventStock();
+	                    while (r.Read())
+	                    {
+	                        list.Add(ReadEvent(r));
+	                    }
+	                    return list;
+	                }
+	            }
+	        }
+	        finally
+	        {
+	            if (tx == null) connection.Close();
+	        }
 		}
 
         public List<TellerEvent> SelectTellerEventsForClosure(DateTime beginDate, DateTime endDate)
