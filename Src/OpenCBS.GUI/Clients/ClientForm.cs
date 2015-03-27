@@ -4290,6 +4290,17 @@ namespace OpenCBS.GUI.Clients
                     listViewItem.SubItems.Add("-");
                     listViewItem.SubItems.Add("-");
                 }
+                else if (displayEvent is InterestWriteOffEvent)
+                {
+                    var penaltyWriteOffEvent = displayEvent as InterestWriteOffEvent;
+                    listViewItem.SubItems.Add("-");
+                    listViewItem.SubItems.Add("-");
+                    listViewItem.SubItems.Add("-");
+                    listViewItem.SubItems.Add(penaltyWriteOffEvent.Amount.GetFormatedValue(pCredit.UseCents));
+                    listViewItem.SubItems.Add("-");
+                    listViewItem.SubItems.Add("-");
+                    listViewItem.SubItems.Add("-");                    
+                }
                 else if (displayEvent is LoanInterestAccrualEvent)
                 {
                     LoanInterestAccrualEvent _event = displayEvent as LoanInterestAccrualEvent;

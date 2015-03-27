@@ -177,6 +177,8 @@ namespace OpenCBS.Manager.Events
                     LoanTransitionEvents.amount AS glll_amount,
                     pwoe.id pwoe_id,
                     pwoe.amount pwoe_amount,
+                    iwoe.id iwoe_id,
+                    iwoe.amount iwoe_amount,
 
                     Users.id AS user_id, 
                     Users.deleted AS user_deleted, 
@@ -209,6 +211,7 @@ namespace OpenCBS.Manager.Events
                     LEFT OUTER JOIN AccrualInterestLoanEvents ON ContractEvents.id = AccrualInterestLoanEvents.id
                     LEFT OUTER JOIN LoanTransitionEvents ON ContractEvents.id = LoanTransitionEvents.id
                     left join dbo.PenaltyWriteOffEvents pwoe on pwoe.id = ContractEvents.id
+                    left join dbo.InterestWriteOffEvents iwoe on iwoe.id = ContractEvents.id
                     WHERE (ContractEvents.contract_id = @id)
                     ORDER BY ContractEvents.id";
 	        var connection = tx != null ? tx.Connection : GetConnection();
@@ -1348,6 +1351,10 @@ namespace OpenCBS.Manager.Events
             {
                 e = GetPenaltyWriteOffEvent(r);
             }
+            else if (r.GetNullInt("iwoe_id").HasValue)
+            {
+                e = GetInterestWriteOffEvent(r);
+            }
             else
             {
                 if (r.GetString("code").Equals("LOVE"))
@@ -1370,6 +1377,14 @@ namespace OpenCBS.Manager.Events
 	        result.Id = r.GetInt("pwoe_id");
 	        result.Amount = r.GetDecimal("pwoe_amount");
 	        return result;
+	    }
+
+	    private static Event GetInterestWriteOffEvent(OpenCbsReader r)
+	    {
+            var result = new InterestWriteOffEvent();
+            result.Id = r.GetInt("iwoe_id");
+            result.Amount = r.GetDecimal("iwoe_amount");
+            return result;	        
 	    }
 
 	    private static Event GetCreditInsuranceEvent(OpenCbsReader r)
