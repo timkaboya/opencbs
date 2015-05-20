@@ -93,6 +93,7 @@
     <Compile Include="CommandData\ShowAlertsCommandData.cs" />
     <Compile Include="CommandData\ShowDashboardCommandData.cs" />
     <Compile Include="CommandData\ShowRepaymentViewCommandData.cs" />
+    <Compile Include="CommandData\ShowSearchCommandData.cs" />
     <Compile Include="CommandData\ShowStartPageCommandData.cs" />
     <Compile Include="Command\AddCompanyCommand.cs" />
     <Compile Include="Command\AddGroupCommand.cs" />
@@ -102,6 +103,7 @@
     <Compile Include="Command\EditLoanCommand.cs" />
     <Compile Include="Command\EditSavingCommand.cs" />
     <Compile Include="Command\ShowDashboardCommand.cs" />
+    <Compile Include="Command\ShowSearchCommand.cs" />
     <Compile Include="Interface\View\IAlertsView.cs" />
     <Compile Include="Command\OpenEmailCommand.cs" />
     <Compile Include="Command\OpenUrlCommand.cs" />
