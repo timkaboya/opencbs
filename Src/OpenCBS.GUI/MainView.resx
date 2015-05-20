@@ -638,22 +638,28 @@
     <value>Products</value>
   </data>
   <data name="_startPageItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>131, 22</value>
+    <value>152, 22</value>
   </data>
   <data name="_startPageItem.Text" xml:space="preserve">
     <value>Start Page</value>
   </data>
   <data name="_alertsItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>131, 22</value>
+    <value>152, 22</value>
   </data>
   <data name="_alertsItem.Text" xml:space="preserve">
     <value>Alerts</value>
   </data>
   <data name="_dashboardItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>131, 22</value>
+    <value>152, 22</value>
   </data>
   <data name="_dashboardItem.Text" xml:space="preserve">
     <value>Dashboard</value>
+  </data>
+  <data name="_searchItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>152, 22</value>
+  </data>
+  <data name="_searchItem.Text" xml:space="preserve">
+    <value>Search</value>
   </data>
   <data name="_viewItem.Size" type="System.Drawing.Size, System.Drawing">
     <value>44, 20</value>
@@ -1865,10 +1871,16 @@
   <data name="&gt;&gt;toolStripStatusLblDB.Type" xml:space="preserve">
     <value>System.Windows.Forms.ToolStripStatusLabel, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
+  <data name="&gt;&gt;_searchItem.Name" xml:space="preserve">
+    <value>_searchItem</value>
+  </data>
+  <data name="&gt;&gt;_searchItem.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
   <data name="&gt;&gt;$this.Name" xml:space="preserve">
     <value>MainView</value>
   </data>
   <data name="&gt;&gt;$this.Type" xml:space="preserve">
-    <value>OpenCBS.GUI.UserControl.SweetBaseForm, OpenCBS.GUI, Version=15.4.0.0, Culture=neutral, PublicKeyToken=null</value>
+    <value>OpenCBS.GUI.UserControl.SweetBaseForm, OpenCBS.GUI, Version=15.5.0.0, Culture=neutral, PublicKeyToken=null</value>
   </data>
 </root>
