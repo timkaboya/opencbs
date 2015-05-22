@@ -89,6 +89,7 @@
     <Compile Include="CommandData\AddGroupCommandData.cs" />
     <Compile Include="CommandData\AddPersonCommandData.cs" />
     <Compile Include="CommandData\AddVillageBankCommandData.cs" />
+    <Compile Include="CommandData\BatchRepayCommandData.cs" />
     <Compile Include="CommandData\EditLoanCommandData.cs" />
     <Compile Include="CommandData\EditSavingCommandData.cs" />
     <Compile Include="CommandData\OpenEmailCommandData.cs" />
@@ -105,12 +106,15 @@
     <Compile Include="Command\AddGroupCommand.cs" />
     <Compile Include="Command\AddPersonCommand.cs" />
     <Compile Include="Command\AddVillageBankCommand.cs" />
+    <Compile Include="Command\BatchRepayCommand.cs" />
     <Compile Include="Command\Command.cs" />
     <Compile Include="Command\EditLoanCommand.cs" />
     <Compile Include="Command\EditSavingCommand.cs" />
     <Compile Include="Command\ShowDashboardCommand.cs" />
     <Compile Include="Command\ShowSearchCommand.cs" />
     <Compile Include="Command\EditVillageBankCommand.cs" />
+    <Compile Include="Interface\Presenter\IBatchRepaymentPresenter.cs" />
+    <Compile Include="Interface\Presenter\IBatchRepaymentPresenterCallbacks.cs" />
     <Compile Include="Interface\Presenter\IVillageBankPresenter.cs" />
     <Compile Include="Interface\Presenter\IVillageBankPresenterCallbacks.cs" />
     <Compile Include="Interface\Repository\ISearchRepository.cs" />
@@ -153,6 +157,7 @@
     <Compile Include="Interface\Service\IAuthService.cs" />
     <Compile Include="Interface\Service\IDatabaseService.cs" />
     <Compile Include="Interface\Service\ITranslationService.cs" />
+    <Compile Include="Interface\View\IBatchRepaymentView.cs" />
     <Compile Include="Interface\View\IErrorView.cs" />
     <Compile Include="Interface\View\ILoginView.cs" />
     <Compile Include="Interface\View\IMainView.cs" />
@@ -181,6 +186,7 @@
     <Compile Include="Model\VillageBankLoan.cs" />
     <Compile Include="Model\VillageBankMember.cs" />
     <Compile Include="Presenter\AlertsPresenter.cs" />
+    <Compile Include="Presenter\BatchRepaymentPresenter.cs" />
     <Compile Include="Presenter\LoginPresenter.cs" />
     <Compile Include="Presenter\RepaymentPresenter.cs" />
     <Compile Include="Presenter\SearchPresenter.cs" />
@@ -214,6 +220,12 @@
     </Compile>
     <Compile Include="View\BaseView.Designer.cs">
       <DependentUpon>BaseView.cs</DependentUpon>
+    </Compile>
+    <Compile Include="View\BatchRepaymentView.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="View\BatchRepaymentView.Designer.cs">
+      <DependentUpon>BatchRepaymentView.cs</DependentUpon>
     </Compile>
     <Compile Include="View\RepaymentView.cs">
       <SubType>Form</SubType>
@@ -275,6 +287,9 @@
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="View\BatchRepaymentView.resx">
+      <DependentUpon>BatchRepaymentView.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="View\VillageBankView.resx">
       <DependentUpon>VillageBankView.cs</DependentUpon>
